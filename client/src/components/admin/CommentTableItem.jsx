@@ -1,9 +1,51 @@
 import React from 'react';
 import { assets } from '../../assets/assets';
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const CommentTableItem = ({ comment, fetchComments }) => {
-  const { blog, createdAt } = comment;
+
+  const {axios} = useAppContext();
+
+
+  const { blog, createdAt, _id } = comment;
   const BlogDate = new Date(createdAt);
+
+  const approveComment = async()=>{
+    try{
+        const {data} = await axios.post('/api/admin/approve-comment', {id: _id})
+        if(data.success){
+          toast.success(data.message)
+          fetchComments()
+        }
+        else{
+          toast.error(data.message)
+        }
+    }
+    catch(err){
+      toast.error(err.message)
+    }
+  }
+
+  const deleteComment = async()=>{
+    try{
+
+        const confirm = window.confirm('Are you sure to delete this comment')
+        if(!confirm)return;
+
+        const {data} = await axios.post('/api/admin/delete-comment', {id: _id})
+        if(data.success){
+          toast.success(data.message)
+          fetchComments()
+        }
+        else{
+          toast.error(data.message)
+        }
+    }
+    catch(err){
+      toast.error(err.message)
+    }
+  }
 
   return (
     <>
@@ -32,7 +74,7 @@ const CommentTableItem = ({ comment, fetchComments }) => {
         <td className="px-6 py-5">
           <div className="flex items-center gap-4">
             {!comment.isApproved ? (
-              <button
+              <button onClick={approveComment}
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full px-3 py-1 text-xs transition transform hover:scale-105"
               >
                 Approve
@@ -43,7 +85,7 @@ const CommentTableItem = ({ comment, fetchComments }) => {
               </span>
             )}
 
-            <button className="hover:scale-110 transition-transform">
+            <button className="hover:scale-110 transition-transform" onClick={deleteComment}>
               <img src={assets.bin_icon} className="w-5" alt="Delete" />
             </button>
           </div>

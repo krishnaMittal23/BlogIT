@@ -6,28 +6,61 @@ import Moment from 'moment'
 import Footer from './../components/Footer';
 // import Loader from '../components/Loader';
 import ShimmerLoader from '../components/ShimmerLoader';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const Blog = () => {
 
   const {id} = useParams();
+
+  const {axios} = useAppContext()
+
   const [data,setdata] = useState(null);
   const [comments,setcomments] = useState([]);
-  const [name,setname] = useState('');
-  const [content,setcontent] = useState('');
+  const [name,setName] = useState('');
+  const [content,setContent] = useState('');
 
 
   const fetchBlogData = async()=>{
-    const data = blog_data.find(item => item._id===id);
-    setdata(data);
+    try{
+      const {data} = await axios.get(`api/blog/${id}`)
+      data.success ? setdata(data.blog) : toast.error(data.message)
+    }
+    catch(error){
+      toast.error(error.message)
+    }
   }
 
   const fetchComments = async()=>{
-    setcomments(comments_data)
+    try{
+      const {data} = await axios.post('api/blog/comments', {blogId: id})
+      data.success ? setcomments(data.comments) : toast.error(data.message)
+    }
+    catch(error){
+      toast.error(error.message)
+    }
   }
 
-  const addcomment = async(e)=>{
+  const addComment = async (e) => {
     e.preventDefault();
-  }
+    try {
+        const { data } = await axios.post('/api/blog/add-comment', {
+            blog: id,
+            name,
+            content
+        });
+
+        if (data.success) {
+            toast.success(data.message);
+            setName('');
+            setContent('');
+        } else {
+            toast.error(data.message);
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
+    }
+};
 
   useEffect(()=>{
     fetchBlogData();
@@ -73,9 +106,9 @@ const Blog = () => {
              {/* add comment section */}
         <div className='max-w-3xl mx-auto'>
           <p className='font-semibold mb-4'>Add Your Comment</p>
-          <form onSubmit={addcomment} className='flex flex-col items-start gap-4 max-w-lg'>
-            <input onChange={(e)=>setname(e.target.value)} value={name} type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none'/>
-            <textarea onChange={(e)=>setcontent(e.target.value)} value={content} placeholder='comment' className='w-full p-2 border border-gray-300 rounded outline-none h-48'/>
+          <form onSubmit={addComment} className='flex flex-col items-start gap-4 max-w-lg'>
+            <input onChange={(e)=>setName(e.target.value)} value={name} type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none'/>
+            <textarea onChange={(e)=>setContent(e.target.value)} value={content} placeholder='comment' className='w-full p-2 border border-gray-300 rounded outline-none h-48'/>
             <button type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>Submit</button>
 
           </form>

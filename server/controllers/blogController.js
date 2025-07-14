@@ -1,6 +1,7 @@
 import fs from 'fs'
 import imagekit from '../configs/imageKit.js';
 import Blog from '../models/Blog.js';
+import Comment from '../models/Comment.js';
 
 
 export const addBlog = async (req, res) => {
@@ -93,6 +94,9 @@ export const deleteBlogById = async(req,res)=>{
         const {id} = req.body;
         await Blog.findByIdAndDelete(id);
 
+        // delete comments also
+        await Comment.deleteMany({blog:id})
+
         res.json({success:true, message: "blog deleted successfully"})
 
     }
@@ -121,4 +125,59 @@ export const togglePublish = async(req,res)=>{
         });
     }
 }
+
+export const addComment = async (req, res) => {
+    try {
+        const { blog, name, content } = req.body;
+        
+        if (!blog || !name || !content) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        await Comment.create({ blog, name, content });
+        
+        res.status(201).json({
+            success: true,
+            message: 'Comment added for review'
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const getBlogComments = async (req, res) => {
+    try {
+        const { blogId } = req.body;
+        
+        if (!blogId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Blog ID is required'
+            });
+        }
+
+        const comments = await Comment.find({
+            blog: blogId,
+            isApproved: true
+        }).sort({ createdAt: -1 });
+        
+        res.status(200).json({
+            success: true,
+            comments
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 

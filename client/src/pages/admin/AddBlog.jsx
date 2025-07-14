@@ -1,22 +1,62 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { assets, blogCategories } from '../../assets/assets';
 import Quill from 'quill'
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const AddBlog = () => {
+
+    const {axios} = useAppContext();
+    const [isAdding, setIsAdding] = useState(false);
 
   // for quill to get text editor functionality
   const editorRef = useRef(null)
   const quillRef = useRef(null)
 
   const [image, setImage] = useState(false);
-  const [title, settitle] = useState('');
+  const [title, setTitle] = useState('');
   const [subTitle, setsubTitle] = useState('');
   const [category, setcategory] = useState('Startup');
   const [isPublished, setisPublished] = useState(false);
 
-  const onSubmitHandler = async(e)=>{
-    e.preventDefault();
-  }
+  const onSubmitHandler = async (e) => {
+    try {
+        e.preventDefault();
+        setIsAdding(true);
+        
+        const blog = {
+            title,
+            subTitle: subTitle,  
+            description: quillRef.current?.root.innerHTML,
+            category,
+            isPublished
+        };
+
+        const formData = new FormData();  
+        formData.append('blog', JSON.stringify(blog));
+        formData.append('image', image);
+
+        const {data} = await axios.post('/api/blog/add', formData);
+        if(data.success){
+            toast.success(data.message);
+            setImage(false);
+            setTitle('')
+            quillRef.current.root.innerHTML = ''
+            setcategory('Startup')
+        }
+        else{
+            toast.error(data.message)
+        }
+
+    } catch (error) {
+        
+        
+        toast.error(error.message);
+    }
+    finally{
+        setIsAdding(false)
+    }
+};
 
   const generateContent = async()=>{
 
@@ -56,7 +96,7 @@ return (
         placeholder='Type here' 
         required 
         className='w-full max-w-lg mt-2 p-2 border border-gray-300 outline-none rounded' 
-        onChange={e => settitle(e.target.value)} 
+        onChange={e => setTitle(e.target.value)} 
         value={title}
     />
 
@@ -104,7 +144,7 @@ return (
         />
     </div>
 
-        <button type='submit' className='mt-8 w-40 h-10 bg-primary text-white rounded cursor-pointer text-sm hover:scale-105 transition-all'>Add Blog</button>
+        <button disabled={isAdding} type='submit' className='mt-8 w-40 h-10 bg-primary text-white rounded cursor-pointer text-sm hover:scale-105 transition-all'>{isAdding ? 'Adding...' : 'Add Blog'}</button>
 
         </div>
     </form>

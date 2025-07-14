@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useRef } from "react";
 import { assets } from "../assets/assets";
+import { useAppContext } from "../context/AppContext";
+import cloneSet from './../../node_modules/lodash-es/_cloneSet';
 
 const Header = () => {
+
+  const {input,setInput} = useAppContext();
+  const inputRef = useRef();
+
+  const onSubmitHandler = async(e)=>{
+      e.preventDefault();
+      setInput(inputRef.current.value)
+  }
+
+  const onClear = ()=>{
+    setInput("")
+    inputRef.current.value = ''
+  }
+
   return (
     <div className="mx-8 sm:mx-16 xl:mx-24 relative">
       <div className="text-center mt-20 mb-8">
@@ -21,8 +37,9 @@ const Header = () => {
           you to express your thoughts effortlessly
         </p>
 
-        <form className="flex items-center justify-center gap-4 sm:gap-6 mt-6">
+        <form onSubmit={onSubmitHandler} className="flex items-center justify-center gap-4 sm:gap-6 mt-6">
           <input
+            ref={inputRef}
             type="text"
             placeholder="Search for blogs"
             className="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary  transition duration-200"
@@ -36,6 +53,9 @@ const Header = () => {
           </button>
         </form>
       </div>
+
+      <div className="text-center">
+{input && <button onClick={onClear} className="border font-light text-xs py-1 px-3 rounded-full shadow-custom-sm cursor-pointer text-gray-600">Clear Search</button>}      </div>
       <img
         src={assets.gradientBackground}
         className="absolute -top-50 -z-1 opacity-50"
