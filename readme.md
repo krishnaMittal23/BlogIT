@@ -11,7 +11,7 @@ This is a **full-stack blog website** built with modern technologies, featuring 
 ✅ Upload thumbnails using ImageKit  
 ✅ AI integration to generate blog content automatically  
 ✅ Comment system with approval workflows  
-✅ Admin dashboard with recent blogs, comments, and drafts overview  
+✅ Admin dashboard with recent blogs, comments, and drafts overview 
 ✅ Responsive and modern UI built with Tailwind CSS  
 ✅ Clean code with React, Express, and MongoDB stack
 
